@@ -25,7 +25,7 @@ class C:
 
 
 RANK = {
-    'NONE': 'Normal',
+    'NORMAL': '',
     'VIP': 'VIP',
     'VIP_PLUS': 'VIP+',
     'MVP': 'MVP',

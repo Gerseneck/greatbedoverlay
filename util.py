@@ -1,7 +1,7 @@
+import math
 import requests
 
 import constants
-import math
 
 
 def get_uuid(name: str):
@@ -66,17 +66,29 @@ def _get_win_lose(data: dict):
         losses = data['player']['stats']['Bedwars']['losses_bedwars']
     return wins, losses
 
+
 def _get_rank(data: dict):
-    rank = 'NONE'
-    if 'rank' in data['player'] and not data["player"]["rank"] == "NORMAL":
+    rank = 'NORMAL'
+    if 'rank' in data['player']:
         rank = data['player']['rank']
-    elif 'monthlyPackageRank' in data['player'] and not data['player']['monthlyPackageRank'] == 'NONE':
+    elif 'monthlyPackageRank' in data['player'] and data['player']['monthlyPackageRank'] != 'NONE':
         rank = data['player']['monthlyPackageRank']
     elif 'newPackageRank' in data['player']:
         rank = data['player']['newPackageRank']
     elif 'packageRank' in data['player']:
         rank = data['player']['packageRank']
     return constants.RANK[rank]
+
+
+def _longest_name(data: dict):
+    name = []
+    for i in data:
+        if 'rank' in data[i] and data[i]['rank']:
+            name.append(f'[{data[i]["rank"]}] {i}')
+        else:
+            name.append(i)
+    longest_name = max(name, key=len)
+    return longest_name
 
 
 def get_info(data: dict):
@@ -94,7 +106,7 @@ def get_info(data: dict):
 
 
 def print_data(data: dict):
-    spaces = len(max(data, key=len)) + 16
+    spaces = len(_longest_name(data))
     no_data_players = {}
     for player in list(data):
         if data[player] == 'Nicked. Unable to obtain Bedwars data.' or data[player] == 'Unable to obtain Bedwars data':
@@ -102,10 +114,11 @@ def print_data(data: dict):
             data.pop(player)
     data = dict(sorted(data.items(), key=lambda item: item[1]['bedwars_level'], reverse=True))
     title = f'NAME{" " * (spaces - 4)} | LEVEL | BEDWARS LEVEL | FINAL KILLS |  FKDR  | BEDS BROKEN |  WINS  |  WLR  | WINSTREAK | SCORE |'
+    print('=' * len(title))
     print(title)
     print('=' * len(title))
     for player in data:
-        rank = data[player]['rank']
+        rank = f'[{data[player]["rank"]}] ' if data[player]['rank'] else ''
         level = data[player]['level']
         level_bedwars = data[player]['bedwars_level']
         finals = data[player]['finals']
@@ -115,9 +128,9 @@ def print_data(data: dict):
         wlr = data[player]['WLR']
         winstreak = data[player]['winstreak']
 
-        spaces_name = spaces - len(rank) - 3
-        print(f'[{rank}] {player:<{spaces_name}s} | {level:^5} | {level_bedwars:^13} | {finals:^11} | {fkdr:^6} | '
-              f'{beds:^11} | {wins:^6} | {wlr:^5} | {winstreak:^9} |  | ')
+        spaces_name = spaces - len(rank)
+        print(f'{rank}{player:<{spaces_name}} | {level:^5} | {level_bedwars:^13} | {finals:^11} | {fkdr:^6} | '
+              f'{beds:^11} | {wins:^6} | {wlr:^5} | {winstreak:^9} |       | ')
     for player in no_data_players:
-        print(f'{player:<{spaces}s} | {no_data_players[player]:^95} |')
+        print(f'{player:<{spaces}} | {no_data_players[player]:^95} |')
     print('=' * len(title))
