@@ -1,6 +1,7 @@
 import requests
 
 import constants
+import math
 
 
 def get_uuid(name: str):
@@ -11,6 +12,7 @@ def get_uuid(name: str):
         if data['errorMessage']:
             return None
     except (requests.exceptions.ConnectionError, requests.exceptions.RequestException, KeyError):
+        print('Something happened with the connection. Maybe their server is down?')
         return None
 
 
@@ -21,6 +23,7 @@ def get_stats(key: str, uuid: str):
             return None
         return data
     except (requests.exceptions.ConnectionError, requests.exceptions.RequestException, KeyError):
+        print('Something happened with the connection. Maybe their server is down?')
         return None
 
 
@@ -54,7 +57,7 @@ def _get_beds(data: dict):
     return beds, lost
 
 
-def _get_win_loose(data: dict):
+def _get_win_lose(data: dict):
     wins = 0
     losses = 0
     if 'wins_bedwars' in data['player']['stats']['Bedwars']:
@@ -63,18 +66,11 @@ def _get_win_loose(data: dict):
         losses = data['player']['stats']['Bedwars']['losses_bedwars']
     return wins, losses
 
-
-def _get_level(data: dict):
-    # exp = data['player']['networkExp']
-    exp = 0
-    return exp
-
-
 def _get_rank(data: dict):
     rank = 'NONE'
-    if 'rank' in data['player']:
+    if 'rank' in data['player'] and not data["player"]["rank"] == "NORMAL":
         rank = data['player']['rank']
-    elif 'monthlyPackageRank' in data['player'] and data['player']['monthlyPackageRank'] != 'NONE':
+    elif 'monthlyPackageRank' in data['player'] and not data['player']['monthlyPackageRank'] == 'NONE':
         rank = data['player']['monthlyPackageRank']
     elif 'newPackageRank' in data['player']:
         rank = data['player']['newPackageRank']
@@ -88,11 +84,11 @@ def get_info(data: dict):
         return 'Unable to obtain Bedwars data'
 
     bw_level = data['player']['achievements']['bedwars_level']
-    level = _get_level(data)
+    level = math.floor(math.sqrt(data['player']['networkExp']/1250+12.25)-2.5)
     rank = _get_rank(data)
     finals, deaths = _get_finals(data)
     beds_broken, beds_lost = _get_beds(data)
-    wins, losses = _get_win_loose(data)
+    wins, losses = _get_win_lose(data)
     winstreak = _get_winstreak(data)
     return {'rank': rank, 'level': level, 'bedwars_level': bw_level, 'finals': finals, 'FKDR': round(finals/deaths, 2), 'beds_broken': beds_broken, 'wins': wins, 'WLR': round(wins/losses, 2), 'winstreak': winstreak}
 
