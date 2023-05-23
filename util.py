@@ -139,7 +139,7 @@ def print_data(data: dict):
     print(title)
     print('=' * len(title))
     for player in data:
-        rank = f'[{data[player]["rank"]}] ' if data[player]['rank'] else ''
+        rank = data[player]['rank']
         level = data[player]['level']
         level_bedwars = data[player]['bedwars_level']
         finals = data[player]['finals']

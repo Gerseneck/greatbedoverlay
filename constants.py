@@ -26,13 +26,13 @@ class C:
 
 RANK = {
     'NORMAL': '',
-    'VIP': 'VIP',
-    'VIP_PLUS': 'VIP+',
-    'MVP': 'MVP',
-    'MVP_PLUS': 'MVP+',
-    'SUPERSTAR': 'MVP++',
-    'YOUTUBER': 'YouTuber',
-    'HELPER': 'Helper',
-    'MODERATOR': 'Moderator',
-    'ADMIN': 'Administrator',
+    'VIP': f'{C.green}[VIP]{C.end}',
+    'VIP_PLUS': f'{C.green}[VIP{C.yellow}+{C.green}]{C.end}',
+    'MVP': f'{C.cyan}[MVP]{C.end}',
+    'MVP_PLUS': f'{C.cyan}[MVP{C.red}+{C.cyan}]{C.end}',
+    'SUPERSTAR': f'{C.darkyellow}[MVP{C.red}++{C.darkyellow}]{C.end}',
+    'YOUTUBER': f'{C.red}[{C.white}YouTuber{C.red}]{C.end}',
+    'HELPER': f'{C.darkblue}[Helper]{C.end}',
+    'MODERATOR': f'{C.darkgreen}[Mod]{C.end}',
+    'ADMIN': f'{C.darkred}[Admin]{C.end}',
 }
