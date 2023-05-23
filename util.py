@@ -71,7 +71,7 @@ def _get_level(data: dict):
 
 
 def _get_rank(data: dict):
-    rank = ''
+    rank = 'NONE'
     if 'rank' in data['player']:
         rank = data['player']['rank']
     elif 'monthlyPackageRank' in data['player'] and data['player']['monthlyPackageRank'] != 'NONE':
@@ -80,13 +80,11 @@ def _get_rank(data: dict):
         rank = data['player']['newPackageRank']
     elif 'packageRank' in data['player']:
         rank = data['player']['packageRank']
-    if not rank:
-        return 'NONE'
     return constants.RANK[rank]
 
 
 def get_info(data: dict):
-    if not data:
+    if 'Bedwars' not in data['player']['stats']:
         return 'Unable to obtain Bedwars data'
 
     bw_level = data['player']['achievements']['bedwars_level']
@@ -106,7 +104,6 @@ def print_data(data: dict):
         if data[player] == 'Nicked. Unable to obtain Bedwars data.' or data[player] == 'Unable to obtain Bedwars data':
             no_data_players[player] = data[player]
             data.pop(player)
-            continue
     data = dict(sorted(data.items(), key=lambda item: item[1]['bedwars_level'], reverse=True))
     title = f'NAME{" " * (spaces - 4)} | LEVEL | BEDWARS LEVEL | FINAL KILLS |  FKDR  | BEDS BROKEN |  WINS  |  WLR  | WINSTREAK | SCORE |'
     print(title)
