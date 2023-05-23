@@ -3,6 +3,7 @@ import time
 
 import util
 from constants import C
+from api import get_uuid, get_stats
 
 
 def tail(file):
@@ -18,13 +19,13 @@ def tail(file):
 def set_data(name: str, key: str, match_data: dict):
     if name in match_data:
         return
-    uuid = util.get_uuid(name)
+    uuid = get_uuid(name)
     if uuid:
-        stat = util.get_stats(key, uuid)
-        if not stat:
-            print('Invalid API key. Join Hypixel and execute `/api new` for a new key.')
-            return
-        match_data[name] = util.get_info(stat)
+        stat = get_stats(key, uuid)
+        try:
+            match_data[name] = util.get_info(stat)
+        except RuntimeError:
+            match_data[name] = 'New'
     else:
         match_data[name] = 'Nicked. Unable to obtain Bedwars data.'
 
@@ -49,31 +50,27 @@ def main():
         for line in log_lines:
             if '[CHAT]' not in line:
                 continue
+
             if 'Sending you to' in line:
                 match_name = line.strip().split(' ')[7][:-1]
                 match_data = {}
+
             if 'ONLINE:' in line:
                 name = line.replace(', ', ' ').split()[5:]
                 for n in name:
                     set_data(n, key, match_data)
-                print('\033[H\033[2J')
-                print(f'Game {match_name}:\n')
-                util.print_data(match_data)
+                util.print_data(match_name, match_data)
             if 'has joined' in line:
                 name = line.split()[4]
                 set_data(name, key, match_data)
-                print('\033[H\033[2J')
-                print(f'Game {match_name}:\n')
                 if int(line.split()[7][1]) > len(match_data):
                     print(f'{C.yellow}Less players detected! Run /who to update all players{C.end}')
-                util.print_data(match_data)
+                util.print_data(match_name, match_data)
             if 'has quit' in line:
                 name = line.split()[4]
                 if name in match_data:
                     match_data.pop(name)
-                print('\033[H\033[2J')
-                print(f'Game {match_name}:\n')
-                util.print_data(match_data)
+                util.print_data(match_name, match_data)
 
 
 if __name__ == '__main__':

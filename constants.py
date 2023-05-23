@@ -24,15 +24,21 @@ class C:
     end = '\033[0;0m'
 
 
+CLEAR = '\033[H\033[2J'
+
+
 RANK = {
     'NORMAL': '',
-    'VIP': f'{C.green}[VIP]{C.end}',
-    'VIP_PLUS': f'{C.green}[VIP{C.yellow}+{C.green}]{C.end}',
-    'MVP': f'{C.cyan}[MVP]{C.end}',
-    'MVP_PLUS': f'{C.cyan}[MVP{C.red}+{C.cyan}]{C.end}',
-    'SUPERSTAR': f'{C.darkyellow}[MVP{C.red}++{C.darkyellow}]{C.end}',
-    'YOUTUBER': f'{C.red}[{C.white}YouTuber{C.red}]{C.end}',
-    'HELPER': f'{C.darkblue}[Helper]{C.end}',
-    'MODERATOR': f'{C.darkgreen}[Mod]{C.end}',
-    'ADMIN': f'{C.darkred}[Admin]{C.end}',
+    'VIP': f'{C.green}[VIP] ',
+    'VIP_PLUS': f'{C.green}[VIP{C.yellow}+{C.green}] ',
+    'MVP': f'{C.cyan}[MVP] ',
+    'MVP_PLUS': f'{C.cyan}[MVP{C.red}+{C.cyan}] ',
+    'SUPERSTAR': f'{C.darkyellow}[MVP{C.red}++{C.darkyellow}] ',
+    'YOUTUBER': f'{C.red}[{C.white}YOUTUBE{C.red}] ',
+    'MOJANG': f'{C.darkyellow}[MOJANG] ',
+    'EVENTS': f'{C.darkyellow}[EVENTS] ',
+    'MCP': f'{C.red}[MCP] ',
+    'MODERATOR': f'{C.darkgreen}[GM] ',
+    'ADMIN': f'{C.darkred}[ADMIN] ',
+    'OWNER': f'{C.darkred}[OWNER] '
 }
