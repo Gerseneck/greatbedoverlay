@@ -6,7 +6,8 @@ import constants
 
 def get_uuid(name: str):
     try:
-        data = requests.get(f'https://api.mojang.com/users/profiles/minecraft/{name}', headers={'User-Agent': 'Mozilla/5.0'}).json()
+        data = requests.get(f'https://api.mojang.com/users/profiles/minecraft/{name}',
+                            headers={'User-Agent': 'Mozilla/5.0'}).json()
         if data['id']:
             return data['id']
         if data['errorMessage']:
@@ -18,13 +19,21 @@ def get_uuid(name: str):
 
 def get_stats(key: str, uuid: str):
     try:
-        data = requests.get(f'https://api.hypixel.net/player?key={key}&uuid={uuid}', headers={'User-Agent': 'Mozilla/5.0'}).json()
+        data = requests.get(f'https://api.hypixel.net/player?key={key}&uuid={uuid}',
+                            headers={'User-Agent': 'Mozilla/5.0'}).json()
         if not data['success']:
             return None
         return data
     except (requests.exceptions.ConnectionError, requests.exceptions.RequestException, KeyError):
         print('Something happened with the connection. Maybe their server is down?')
         return None
+
+
+def _get_network_level(data: dict):
+    network_exp = 0
+    if 'networkExp' in data['player']:
+        network_exp = math.floor(math.sqrt(data['player']['networkExp'] / 1250 + 12.25) - 2.5)
+    return network_exp
 
 
 def _get_winstreak(data: dict):
@@ -35,8 +44,10 @@ def _get_winstreak(data: dict):
 
 
 def _get_finals(data: dict):
-    core_finals = ['eight_one_final_kills_bedwars', 'eight_two_final_kills_bedwars', 'four_three_final_kills_bedwars', 'four_four_final_kills_bedwars']
-    core_deaths = ['eight_one_final_deaths_bedwars', 'eight_two_final_deaths_bedwars', 'four_three_final_deaths_bedwars', 'four_four_final_deaths_bedwars']
+    core_finals = ['eight_one_final_kills_bedwars', 'eight_two_final_kills_bedwars', 'four_three_final_kills_bedwars',
+                   'four_four_final_kills_bedwars']
+    core_deaths = ['eight_one_final_deaths_bedwars', 'eight_two_final_deaths_bedwars',
+                   'four_three_final_deaths_bedwars', 'four_four_final_deaths_bedwars']
 
     finals = 0
     deaths = 0
@@ -96,13 +107,15 @@ def get_info(data: dict):
         return 'Unable to obtain Bedwars data'
 
     bw_level = data['player']['achievements']['bedwars_level']
-    level = math.floor(math.sqrt(data['player']['networkExp']/1250+12.25)-2.5)
+    level = _get_network_level(data)
     rank = _get_rank(data)
     finals, deaths = _get_finals(data)
     beds_broken, beds_lost = _get_beds(data)
     wins, losses = _get_win_lose(data)
     winstreak = _get_winstreak(data)
-    return {'rank': rank, 'level': level, 'bedwars_level': bw_level, 'finals': finals, 'FKDR': round(finals/deaths, 2), 'beds_broken': beds_broken, 'wins': wins, 'WLR': round(wins/losses, 2), 'winstreak': winstreak}
+    return {'rank': rank, 'level': level, 'bedwars_level': bw_level, 'finals': finals,
+            'FKDR': round(finals / deaths, 2), 'beds_broken': beds_broken, 'wins': wins, 'WLR': round(wins / losses, 2),
+            'winstreak': winstreak}
 
 
 def print_data(data: dict):
