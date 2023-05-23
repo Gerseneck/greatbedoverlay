@@ -32,7 +32,7 @@ def get_stats(key: str, uuid: str):
 def _get_network_level(data: dict):
     network_exp = 0
     if 'networkExp' in data['player']:
-        network_exp = math.floor(math.sqrt(data['player']['networkExp'] / 1250 + 12.25) - 2.5)
+        network_exp = round(math.sqrt(data['player']['networkExp'] / 1250 + 12.25) - 2.5, 2)
     return network_exp
 
 
@@ -98,6 +98,8 @@ def _longest_name(data: dict):
             name.append(f'[{data[i]["rank"]}] {i}')
         else:
             name.append(i)
+    if not name:
+        return 10
     longest_name = max(name, key=len)
     return longest_name
 
@@ -110,11 +112,17 @@ def get_info(data: dict):
     level = _get_network_level(data)
     rank = _get_rank(data)
     finals, deaths = _get_finals(data)
+    fkdr = finals
+    if deaths != 0:
+        fkdr = round(finals / deaths, 2)
     beds_broken, beds_lost = _get_beds(data)
     wins, losses = _get_win_lose(data)
+    wlr = wins
+    if losses != 0:
+        wlr = round(wins / losses, 2)
     winstreak = _get_winstreak(data)
     return {'rank': rank, 'level': level, 'bedwars_level': bw_level, 'finals': finals,
-            'FKDR': round(finals / deaths, 2), 'beds_broken': beds_broken, 'wins': wins, 'WLR': round(wins / losses, 2),
+            'FKDR': fkdr, 'beds_broken': beds_broken, 'wins': wins, 'WLR': wlr,
             'winstreak': winstreak}
 
 
