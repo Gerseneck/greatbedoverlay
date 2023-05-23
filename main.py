@@ -20,7 +20,7 @@ def main():
     print('GreatOverlay')
 
     log = pl.Path('~/.lunarclient/offline/multiver/logs/latest.log').expanduser().open('r')
-    key = 'f8a22fc3-6849-44ec-9da8-77d3f419b440'
+    key = ''
 
     if not key:
         print('You do not have an api key. Join Hypixel and send `/api new` for a key.')
@@ -39,9 +39,12 @@ def main():
                 uuid = util.get_uuid(name)
                 if uuid:
                     stat = util.get_stats(key, uuid)
+                    if not stat:
+                        print('Invalid API key.')
+                        return
                     match_data[name] = util.get_info(stat)
                 else:
-                    match_data[name] = 'Nicked. Unable to obtain bedwars data.'
+                    match_data[name] = 'Nicked. Unable to obtain Bedwars data.'
                 print('\033[H\033[2J')
                 print(f'Game {match_name}:')
                 print()
