@@ -2,6 +2,7 @@ import pathlib as pl
 import time
 
 import util
+from constants import C
 
 
 def tail(file):
@@ -15,6 +16,8 @@ def tail(file):
 
 
 def set_data(name: str, key: str, match_data: dict):
+    if name in match_data:
+        return
     uuid = util.get_uuid(name)
     if uuid:
         stat = util.get_stats(key, uuid)
@@ -33,7 +36,6 @@ def main():
 
     log = pl.Path('~/.lunarclient/offline/multiver/logs/latest.log').expanduser().open('r')
     key = input('Please enter an API key: ')
-    print(key)
 
     if not key:
         print('You do not have an api key. Join Hypixel and execute `/api new` for a key.')
@@ -50,7 +52,6 @@ def main():
             if 'Sending you to' in line:
                 match_name = line.strip().split(' ')[7][:-1]
                 match_data = {}
-                print('Queue detected! If nothing shows up, type /who')
             if 'ONLINE:' in line:
                 name = line.replace(', ', ' ').split()[5:]
                 for n in name:
@@ -63,10 +64,13 @@ def main():
                 set_data(name, key, match_data)
                 print('\033[H\033[2J')
                 print(f'Game {match_name}:\n')
+                if int(line.split()[7][1]) > len(match_data):
+                    print(f'{C.yellow}Less players detected! Run /who to update all players{C.end}')
                 util.print_data(match_data)
             if 'has quit' in line:
                 name = line.split()[4]
-                match_data.pop(name)
+                if name in match_data:
+                    match_data.pop(name)
                 print('\033[H\033[2J')
                 print(f'Game {match_name}:\n')
                 util.print_data(match_data)
