@@ -3,6 +3,22 @@
 
 class C:
     bwhite = '\033[1;97m'
+    byellow = '\033[1;93m'
+    bgreen = '\033[1;92m'
+    bblue = '\033[1;94m'
+    bcyan = '\033[1;96m'
+    bred = '\033[1;91m'
+    bmagenta = '\033[1;95m'
+    bblack = '\033[1;90m'
+    bdarkwhite = '\033[1;37m'
+    bdarkyellow = '\033[1;33m'
+    bdarkgreen = '\033[1;32m'
+    bdarkblue = '\033[1;34m'
+    bdarkcyan = '\033[1;36m'
+    bdarkred = '\033[1;31m'
+    bdarkmagenta = '\033[1;35m'
+    bdarkblack = '\033[1;30m'
+    #
     no = '\033[9;91m'
     #
     white = '\033[0;97m'

@@ -32,10 +32,7 @@ class Player:
 
 
 def get_network_level(data: dict):
-    network_level = 0
-    if 'networkExp' in data['player']:
-        network_level = round(math.sqrt(data['player']['networkExp']*0.0008 + 12.25) - 2.5, 2)
-    return network_level
+    return round(math.sqrt(data['player'].get('networkExp', 0)*0.0008 + 12.25) - 2.5, 2)
 
 
 def get_rank(data: dict):
@@ -70,12 +67,37 @@ def wilson_ratio(positive: int, negative: int) -> float:
     return p / (1-p)
 
 
-def longest_name(data: dict) -> str:
+def longest_name(data: dict, nicked_players: dict) -> str:
     name = []
-    for i in data:
-        name.append(f'{constants.RAW_RANK[data[i].network_rank]}{i}')
+    for player_name in data:
+        name.append(player_raw_display_name(player_name, data, nicked=False))
+    for player_name in nicked_players:
+        name.append(player_raw_display_name(player_name, data, nicked=True))
     long = max(name, key=len)
     return long
+
+
+def player_raw_display_name(name: str, data: dict, nicked: bool) -> str:
+    if nicked:
+        return f'<nicked> {name}'
+    return f'{constants.RAW_RANK[data[name].network_rank]}{name}'
+
+
+def level_color(level: int) -> str:
+    if level >= 600:
+        return C.bdarkred  # NOTE: your terminal may require customization to bold the dark colors
+    elif level >= 500:
+        return C.bdarkcyan
+    elif level >= 400:
+        return C.bdarkgreen
+    elif level >= 300:
+        return C.bcyan
+    elif level >= 200:
+        return C.darkyellow
+    elif level >= 100:
+        return C.bwhite
+    else:
+        return C.black
 
 
 def get_info(data: dict) -> Player:
@@ -115,27 +137,38 @@ def get_info(data: dict) -> Player:
 def print_data(game_id: str, data: dict):
     print(CLEAR)
     print(f'Game {game_id}:\n')
-    spaces = len(longest_name(data))
 
     nicked_players = {}
-    for player in list(data):
-        if data[player] == 'Nicked. Unable to obtain Bedwars data.':
-            nicked_players[player] = data[player]
-            data.pop(player)
+    for player_name in list(data):
+        if data[player_name] == '[Player nicked - no data]':
+            nicked_players[player_name] = data[player_name]
+            del data[player_name]
+
+    spaces = len(longest_name(data, nicked_players))
 
     data = dict(sorted(data.items(), key=lambda item: item[1].skill_score, reverse=True))
-    title = f'{"NAME":<{spaces}} |    LEVEL    | BW LEVEL | SKILL SCORE | FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |'
+    title = (f'{"NAME":<{spaces}} |  NETWORK LEVEL  | BW LEVEL | SKILL SCORE'
+             + f' ||| FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |')
     print('=' * len(title))
     print(title)
     print('=' * len(title))
 
-    for player in data:
-        player_spaces = spaces - len(constants.RAW_RANK[data[player].network_rank])
-        print(f'{data[player].network_rank}{player:<{player_spaces}}{C.end} | {data[player].network_level:^11} | '
-              f'{data[player].bedwars_level:^8} | {C.bwhite}{data[player].skill_score:^11.2f}{C.end} | {data[player].final_kills:^11} | '
-              f'{data[player].raw_fkdr:^8.2f} | {data[player].adjusted_fkdr:^8.2f} | {data[player].bed_breaks:^11} | '
-              f'{data[player].games_won:^6} | {data[player].raw_wlr:^7.2f} | {data[player].adjusted_wlr:^7.2f} | '
-              f'{data[player].current_winstreak:^9} |')
-    for player in nicked_players:
-        print(f'{player:<{spaces}} | {nicked_players[player]:^135} |')
+    for player_name in data:
+        player_spaces = spaces - len(constants.RAW_RANK[data[player_name].network_rank])
+        print(f'{data[player_name].network_rank}{player_name:<{player_spaces}}{C.end}'
+              f' | {data[player_name].network_level:^15}'
+              f' | {level_color(data[player_name].bedwars_level)}{data[player_name].bedwars_level:^8}{C.end}'
+              f' | {C.bwhite}{data[player_name].skill_score:^11.1f}{C.end}'
+              f' ||| {data[player_name].final_kills:^11}'
+              f' | {C.black}{data[player_name].raw_fkdr:^8.2f}{C.end}'
+              f' | {data[player_name].adjusted_fkdr:^8.2f}'
+              f' | {data[player_name].bed_breaks:^11}'
+              f' | {data[player_name].games_won:^6}'
+              f' | {C.black}{data[player_name].raw_wlr:^7.2f}{C.end}'
+              f' | {data[player_name].adjusted_wlr:^7.2f}'
+              f' | {data[player_name].current_winstreak:^9}'
+              f' |')
+    for player_name in nicked_players:
+        display_name = player_raw_display_name(player_name, data, nicked=True)
+        print(f'{display_name:<{spaces}} | {nicked_players[player_name]:^135} |')
     print('=' * len(title))
