@@ -7,7 +7,7 @@ import time
 
 import util
 from constants import C
-from api import get_uuid, get_stats
+from api import get_uuid, get_api_data
 
 
 def tail(file):
@@ -20,30 +20,30 @@ def tail(file):
         yield lines
 
 
-def set_data(name: str, key: str, match_data: dict):
-    if name in match_data:
+def set_data(player_name: str, key: str, match_data: dict):
+    if player_name in match_data:
         return
-    uuid = get_uuid(name)
+    uuid = get_uuid(player_name)
     if uuid:
-        stat = get_stats(key, uuid)
-        try:
-            match_data[name] = util.get_info(stat)
-        except RuntimeError:
-            match_data[name] = 'New'
+        api_data = get_api_data(key, uuid)
+        if api_data['player'] is not None:
+            match_data[player_name] = util.get_info(api_data)
+        else:
+            match_data[player_name] = f'{C.bdarkred}Nicked. Unable to obtain bedwars data.{C.end}'
     else:
-        match_data[name] = 'Nicked. Unable to obtain Bedwars data.'
+        match_data[player_name] = f'{C.bdarkred}Nicked. Unable to obtain bedwars data.{C.end}'
 
 
 def main():
 
     print('\033[H\033[2J')
-    print('GreatOverlay')
+    print('GreatBedOverlay')
 
     # TODO Setup config file for client, API key
     log = pl.Path('~/.lunarclient/offline/multiver/logs/latest.log').expanduser().open('r')
 
     if len(sys.argv) == 2:
-        print('Using the API key you passed from args!')
+        print('Using the API key passed from args')
         key = sys.argv[1]
     else:
         key = input('Please enter an API key: ')
@@ -66,20 +66,20 @@ def main():
                 match_data = {}
 
             if 'ONLINE:' in line:
-                name = line.replace(', ', ' ').split()[5:]
-                for n in name:
-                    set_data(n, key, match_data)
+                player_names = line.replace(', ', ' ').split()[5:]
+                for name in player_names:
+                    set_data(name, key, match_data)
                 util.print_data(match_name, match_data)
             if 'has joined' in line:
-                name = line.split()[4]
-                set_data(name, key, match_data)
+                player_name = line.split()[4]
+                set_data(player_name, key, match_data)
                 util.print_data(match_name, match_data)
                 if int(line.split()[7][1]) > len(match_data):
                     print(f'{C.yellow}Less players detected! Run /who to update all players{C.end}')
             if 'has quit' in line:
-                name = line.split()[4]
-                if name in match_data:
-                    match_data.pop(name)
+                player_name = line.split()[4]
+                if player_name in match_data:
+                    match_data.pop(player_name)
                 util.print_data(match_name, match_data)
 
 

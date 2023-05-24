@@ -34,20 +34,20 @@ class Player:
     skill_score: float
 
 
-def get_network_level(data: dict):
-    return round(math.sqrt(data['player'].get('networkExp', 0)*0.0008 + 12.25) - 2.5, 2)
+def get_network_level(api_data: dict):
+    return round(math.sqrt(api_data['player'].get('networkExp', 0) * 0.0008 + 12.25) - 2.5, 2)
 
 
-def get_rank(data: dict):
+def get_rank(api_data: dict):
     rank = 'NORMAL'
-    if 'rank' in data['player']:
-        rank = data['player']['rank']
-    elif 'monthlyPackageRank' in data['player'] and data['player']['monthlyPackageRank'] != 'NONE':
-        rank = data['player']['monthlyPackageRank']
-    elif 'newPackageRank' in data['player']:
-        rank = data['player']['newPackageRank']
-    elif 'packageRank' in data['player']:
-        rank = data['player']['packageRank']
+    if 'rank' in api_data['player']:
+        rank = api_data['player']['rank']
+    elif 'monthlyPackageRank' in api_data['player'] and api_data['player']['monthlyPackageRank'] != 'NONE':
+        rank = api_data['player']['monthlyPackageRank']
+    elif 'newPackageRank' in api_data['player']:
+        rank = api_data['player']['newPackageRank']
+    elif 'packageRank' in api_data['player']:
+        rank = api_data['player']['packageRank']
     return constants.RANK[rank]
 
 
@@ -70,42 +70,42 @@ def wilson_ratio(positive: int, negative: int) -> float:
     return p / (1-p)
 
 
-def longest_name(data: dict, nicked_players: dict) -> str:
+def longest_name(player_data: dict, nicked_player_data: dict) -> str:
     name = []
-    for player_name in data:
-        name.append(player_raw_display_name(player_name, data, nicked=False))
-    for player_name in nicked_players:
-        name.append(player_raw_display_name(player_name, data, nicked=True))
+    for player_name in player_data:
+        name.append(player_raw_display_name(player_name, player_data, nicked=False))
+    for player_name in nicked_player_data:
+        name.append(player_raw_display_name(player_name, nicked_player_data, nicked=True))
     long = max(name, key=len)
     return long
 
 
-def player_raw_display_name(name: str, data: dict, nicked: bool) -> str:
+def player_raw_display_name(name: str, player_data: dict, nicked: bool) -> str:
     if nicked:
         return f'<nicked> {name}'
-    return f'{constants.RAW_RANK[data[name].network_rank]}{name}'
+    return f'{constants.RAW_RANK[player_data[name].network_rank]}{name}'
 
 
 # TODO Evaluate whether a player is in a party
 # TODO Evaluate whether a player is an alt
-def get_info(data: dict) -> Player:
-    network_level = get_network_level(data)
-    network_rank = get_rank(data)
+def get_info(api_data: dict) -> Player:
+    network_level = get_network_level(api_data)
+    network_rank = get_rank(api_data)
 
-    if 'Bedwars' not in data['player']['stats']:
+    if 'Bedwars' not in api_data['player'].get('stats', {}):
         return Player(bedwars_level=1, network_level=network_level, network_rank=network_rank,
                       final_kills=0, final_deaths=0, bed_breaks=0, bed_losses=0,
                       games_won=0, games_lost=0, current_winstreak=0, raw_fkdr=0,
                       raw_wlr=0, adjusted_fkdr=0, adjusted_wlr=0, skill_score=0)
 
-    bedwars_level = data['player']['achievements']['bedwars_level']
-    final_kills = sum([data['player']['stats']['Bedwars'].get(key, 0) for key in CORE_MODES_FKILLS])
-    final_deaths = sum([data['player']['stats']['Bedwars'].get(key, 0) for key in CORE_MODES_FDEATHS])
-    bed_breaks = data['player']['stats']['Bedwars'].get('beds_broken_bedwars', 0)
-    bed_losses = data['player']['stats']['Bedwars'].get('beds_lost_bedwars', 0)
-    games_won = data['player']['stats']['Bedwars'].get('wins_bedwars', 0)
-    games_lost = data['player']['stats']['Bedwars'].get('losses_bedwars', 0)
-    current_winstreak = data['player']['stats']['Bedwars'].get('winstreak', 0)
+    bedwars_level = api_data['player']['achievements'].get('bedwars_level', 0)
+    final_kills = sum([api_data['player']['stats']['Bedwars'].get(key, 0) for key in CORE_MODES_FKILLS])
+    final_deaths = sum([api_data['player']['stats']['Bedwars'].get(key, 0) for key in CORE_MODES_FDEATHS])
+    bed_breaks = api_data['player']['stats']['Bedwars'].get('beds_broken_bedwars', 0)
+    bed_losses = api_data['player']['stats']['Bedwars'].get('beds_lost_bedwars', 0)
+    games_won = api_data['player']['stats']['Bedwars'].get('wins_bedwars', 0)
+    games_lost = api_data['player']['stats']['Bedwars'].get('losses_bedwars', 0)
+    current_winstreak = api_data['player']['stats']['Bedwars'].get('winstreak', 0)
 
     # Calculations
     raw_fkdr = final_kills / max(final_deaths, 1)
@@ -122,43 +122,45 @@ def get_info(data: dict) -> Player:
                   raw_wlr=raw_wlr, adjusted_fkdr=adjusted_fkdr, adjusted_wlr=adjusted_wlr, skill_score=skill_score)
 
 
-def print_data(game_id: str, data: dict):
+def print_data(game_id: str, player_data: dict):
     print(CLEAR)
     print(f'Game {game_id}:\n')
 
-    nicked_players = {}
-    for player_name in list(data):
-        if data[player_name] == '[Player nicked - no data]':
-            nicked_players[player_name] = data[player_name]
-            del data[player_name]
+    nicked_player_data = {}
+    unnicked_player_data = {}
+    for name in list(player_data):
+        if player_data[name] == f'{C.bdarkred}Nicked. Unable to obtain bedwars data.{C.end}':
+            nicked_player_data[name] = player_data[name]
+        else:
+            unnicked_player_data[name] = player_data[name]
 
-    spaces = len(longest_name(data, nicked_players))
+    spaces = len(longest_name(unnicked_player_data, nicked_player_data))
 
-    data = dict(sorted(data.items(), key=lambda item: item[1].skill_score, reverse=True))
+    unnicked_player_data = dict(sorted(unnicked_player_data.items(), key=lambda item: item[1].skill_score, reverse=True))
     title = (f'{"NAME":<{spaces}} |  NETWORK LEVEL  | BW LEVEL |   SKILL SCORE   '
              + f'||| FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |')
     print('=' * len(title))
     print(title)
     print('=' * len(title))
 
-    for player_name in data:
-        player_spaces = spaces - len(constants.RAW_RANK[data[player_name].network_rank])
-        print(f'{data[player_name].network_rank}{player_name:<{player_spaces}}{C.end}'
-              f' | {data[player_name].network_level:^15}'
-              f' | {level_color(data[player_name].bedwars_level)}{data[player_name].bedwars_level:^8}{C.end}'
-              f' |   {format_skill(data[player_name].skill_score)}   '
-              f' ||| {final_kill_color(data[player_name].final_kills)}{data[player_name].final_kills:^11}{C.end}'
-              f' | {C.black}{data[player_name].raw_fkdr:^8.2f}{C.end}'
-              f' | {data[player_name].adjusted_fkdr:^8.2f}'
-              f' | {bed_break_color(data[player_name].bed_breaks)}{data[player_name].bed_breaks:^11}{C.end}'
-              f' | {win_color(data[player_name].games_won)}{data[player_name].games_won:^6}{C.end}'
-              f' | {C.black}{data[player_name].raw_wlr:^7.2f}{C.end}'
-              f' | {data[player_name].adjusted_wlr:^7.2f}'
-              f' | {data[player_name].current_winstreak:^9}'
+    for name in unnicked_player_data:
+        player_spaces = spaces - len(constants.RAW_RANK[unnicked_player_data[name].network_rank])
+        print(f'{unnicked_player_data[name].network_rank}{name:<{player_spaces}}{C.end}'
+              f' | {C.bwhite}{unnicked_player_data[name].network_level:^15}{C.end}'
+              f' | {level_color(unnicked_player_data[name].bedwars_level)}{unnicked_player_data[name].bedwars_level:^8}{C.end}'
+              f' |   {format_skill(unnicked_player_data[name].skill_score)}  '
+              f' ||| {final_kill_color(unnicked_player_data[name].final_kills)}{unnicked_player_data[name].final_kills:^11}{C.end}'
+              f' | {C.black}{unnicked_player_data[name].raw_fkdr:^8.2f}{C.end}'
+              f' | {unnicked_player_data[name].adjusted_fkdr:^8.2f}'
+              f' | {bed_break_color(unnicked_player_data[name].bed_breaks)}{unnicked_player_data[name].bed_breaks:^11}{C.end}'
+              f' | {win_color(unnicked_player_data[name].games_won)}{unnicked_player_data[name].games_won:^6}{C.end}'
+              f' | {C.black}{unnicked_player_data[name].raw_wlr:^7.2f}{C.end}'
+              f' | {unnicked_player_data[name].adjusted_wlr:^7.2f}'
+              f' | {winstreak_color(unnicked_player_data[name].current_winstreak)}{unnicked_player_data[name].current_winstreak:^9}{C.end}'
               f' |')
-    for player_name in nicked_players:
-        display_name = player_raw_display_name(player_name, data, nicked=True)
-        print(f'{display_name:<{spaces}} | {nicked_players[player_name]:^135} |')
+    for name in nicked_player_data:
+        display_name = player_raw_display_name(name, unnicked_player_data, nicked=True)
+        print(f'{C.black}{display_name:<{spaces}}{C.end} | {nicked_player_data[name]:^150} |')
     print('=' * len(title))
 
 
@@ -167,7 +169,6 @@ def print_data(game_id: str, data: dict):
 
 def format_skill(skill: float) -> str:
     raw_string = f'{skill:.1f}'
-    spaces = 11 - len(raw_string)
     if skill >= 100:
         # alternating color pattern
         formatted = ''.join([(C.bred if i % 2 == 0 else C.bmagenta) + character for i, character in enumerate(raw_string)])
@@ -177,7 +178,8 @@ def format_skill(skill: float) -> str:
         formatted = C.green + raw_string
     else:
         formatted = C.darkgreen + raw_string
-    return formatted + ' '*spaces + C.end
+    spaces = 11 - len(raw_string)
+    return f'{formatted:^{len(formatted) + spaces}}' + C.end
 def level_color(level: int) -> str:
     if level >= 600:
         return C.bdarkred  # NOTE: your terminal may require customization to bold the dark colors
@@ -214,5 +216,13 @@ def win_color(games_won: int) -> str:
     if games_won >= 1250:
         return C.bdarkyellow
     if games_won >= 500:
+        return C.yellow
+    return ''
+def winstreak_color(winstreak: int) -> str:
+    if winstreak >= 10:
+        return C.bred
+    if winstreak >= 5:
+        return C.darkyellow
+    if winstreak >= 2:
         return C.yellow
     return ''
