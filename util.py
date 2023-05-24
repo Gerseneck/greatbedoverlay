@@ -31,8 +31,11 @@ class Player:
     skill_score: float
 
 
-def get_network_level(experience_amount: int):
-    return round(math.sqrt(experience_amount*0.0008 + 12.25) - 2.5, 2)
+def get_network_level(data: dict):
+    network_level = 0
+    if ['networkExp'] in data['player']:
+        network_level = round(math.sqrt(data['player']['networkExp']*0.0008 + 12.25) - 2.5, 2)
+    return network_level
 
 
 def get_rank(data: dict):
@@ -76,7 +79,7 @@ def longest_name(data: dict) -> str:
 
 
 def get_info(data: dict) -> Player:
-    network_level = get_network_level(data['player']['networkExp'])
+    network_level = get_network_level(data)
     network_rank = get_rank(data)
 
     if 'Bedwars' not in data['player']['stats']:
