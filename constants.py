@@ -27,6 +27,23 @@ class C:
 CLEAR = '\033[H\033[2J'
 
 
+RAW_RANK = {
+    '': '',
+    f'{C.green}[VIP] ': '[VIP] ',
+    f'{C.green}[VIP{C.yellow}+{C.green}] ': '[VIP+] ',
+    f'{C.cyan}[MVP] ': '[MVP] ',
+    f'{C.cyan}[MVP{C.red}+{C.cyan}] ': '[MVP+] ',
+    f'{C.darkyellow}[MVP{C.red}++{C.darkyellow}] ': '[MVP++] ',
+    f'{C.red}[{C.white}YOUTUBE{C.red}] ': '[YOUTUBE] ',
+    f'{C.darkyellow}[MOJANG] ': '[MOJANG] ',
+    f'{C.darkyellow}[EVENTS] ': '[EVENTS] ',
+    f'{C.red}[MCP] ': '[MCP] ',
+    f'{C.darkgreen}[GM] ': '[GM] ',
+    f'{C.darkred}[ADMIN] ': '[ADMIN] ',
+    f'{C.darkred}[OWNER] ': '[OWNER] '
+}
+
+
 RANK = {
     'NORMAL': '',
     'VIP': f'{C.green}[VIP] ',

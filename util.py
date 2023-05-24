@@ -15,7 +15,7 @@ CORE_MODES_FDEATHS = ['eight_one_final_deaths_bedwars', 'eight_two_final_deaths_
 class Player:
     bedwars_level: int
     network_level: float
-    network_rank: int
+    network_rank: str
     final_kills: int
     final_deaths: int
     bed_breaks: int
@@ -70,7 +70,7 @@ def wilson_ratio(positive: int, negative: int) -> float:
 def longest_name(data: dict) -> str:
     name = []
     for i in data:
-        name.append(f'{data[i].network_rank}{i}')
+        name.append(f'{constants.RAW_RANK[data[i].network_rank]}{i}')
     long = max(name, key=len)
     return long
 
@@ -95,10 +95,10 @@ def get_info(data: dict) -> Player:
     current_winstreak = data['player']['stats']['Bedwars'].get('winstreak', 0)
 
     # Calculations
-    raw_fkdr = final_kills / min(final_deaths, 1)
-    raw_wlr = games_won / min(games_lost, 1)
+    raw_fkdr = final_kills / max(final_deaths, 1)
+    raw_wlr = games_won / max(games_lost, 1)
     adjusted_fkdr = wilson_ratio(final_kills, final_deaths)
-    adjusted_wlr = wilson_ratio(final_kills, final_deaths)
+    adjusted_wlr = wilson_ratio(games_won, games_lost)
     # Basically a modified wilson FKDR scaled by 10, with extra points for high numbers of finals/beds
     index = final_kills + 2.5*bed_breaks
     skill_score = 5 * wilson_ratio(math.floor(index), final_deaths) + (index/80)**0.75 - 15
@@ -114,24 +114,24 @@ def print_data(game_id: str, data: dict):
     print(f'Game {game_id}:\n')
 
     nicked_players = {}
-    for player in data:
+    for player in list(data):
         if data[player] == 'Nicked. Unable to obtain Bedwars data.':
             nicked_players[player] = data[player]
             data.pop(player)
 
     spaces = len(longest_name(data))
-    data = dict(sorted(data.items(), key=lambda item: data[item].skill_score, reverse=True))
-    title = f'{"NAME":<{spaces}} | LEVEL | BEDWARS LEVEL | SKILL SCORE | FINAL KILLS | RAW FKDR | ADJUSTED FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJUSTED WLR | WINSTREAK |'
+    data = dict(sorted(data.items(), key=lambda item: item[1].skill_score, reverse=True))
+    title = f'{"NAME":<{spaces}} |    LEVEL    | BW LEVEL | SKILL SCORE | FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |'
     print('=' * len(title))
     print(title)
     print('=' * len(title))
 
     for player in data:
-        spaces = spaces - len(data[player].network_rank)
-        print(f'{data[player].network_rank}{player:<{spaces}}{C.end} | {data[player].network_level:^5} | '
-              f'{data[player].bedwars_level:^12} | {data[player].skill_score:^11.2f} | {data[player].final_kills:^11} | '
-              f'{data[player].raw_fkdr:^8.2f} | {data[player].adjusted_fkdr:^12.2f} | {data[player].bed_breaks:^11} | '
-              f'{data[player].games_won:^6} | {data[player].raw_wlr:^7.2f} | {data[player].adjusted_wlr:^12.2f} | '
+        player_spaces = spaces - len(constants.RAW_RANK[data[player].network_rank])
+        print(f'{data[player].network_rank}{player:<{player_spaces}}{C.end} | {data[player].network_level:^11} | '
+              f'{data[player].bedwars_level:^8} | {C.bwhite}{data[player].skill_score:^11.2f}{C.end} | {data[player].final_kills:^11} | '
+              f'{data[player].raw_fkdr:^8.2f} | {data[player].adjusted_fkdr:^8.2f} | {data[player].bed_breaks:^11} | '
+              f'{data[player].games_won:^6} | {data[player].raw_wlr:^7.2f} | {data[player].adjusted_wlr:^7.2f} | '
               f'{data[player].current_winstreak:^9} |')
     for player in nicked_players:
         print(f'{player:<{spaces}} | {nicked_players[player]:^135} |')

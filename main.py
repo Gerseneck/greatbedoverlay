@@ -63,9 +63,9 @@ def main():
             if 'has joined' in line:
                 name = line.split()[4]
                 set_data(name, key, match_data)
+                util.print_data(match_name, match_data)
                 if int(line.split()[7][1]) > len(match_data):
                     print(f'{C.yellow}Less players detected! Run /who to update all players{C.end}')
-                util.print_data(match_name, match_data)
             if 'has quit' in line:
                 name = line.split()[4]
                 if name in match_data:
