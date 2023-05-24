@@ -1,4 +1,8 @@
+
+from __future__ import annotations
+
 import pathlib as pl
+import sys
 import time
 
 import util
@@ -37,7 +41,12 @@ def main():
 
     # TODO Setup config file for client, API key
     log = pl.Path('~/.lunarclient/offline/multiver/logs/latest.log').expanduser().open('r')
-    key = input('Please enter an API key: ')
+
+    if len(sys.argv) == 2:
+        print('Using the API key you passed from args!')
+        key = sys.argv[1]
+    else:
+        key = input('Please enter an API key: ')
 
     if not key:
         print('You do not have an api key. Join Hypixel and execute `/api new` for a key.')

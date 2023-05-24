@@ -1,5 +1,7 @@
 """Constants"""
 
+from __future__ import annotations
+
 
 class C:
     bwhite = '\033[1;97m'
