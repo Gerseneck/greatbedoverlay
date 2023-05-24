@@ -33,7 +33,7 @@ class Player:
 
 def get_network_level(data: dict):
     network_level = 0
-    if ['networkExp'] in data['player']:
+    if 'networkExp' in data['player']:
         network_level = round(math.sqrt(data['player']['networkExp']*0.0008 + 12.25) - 2.5, 2)
     return network_level
 
@@ -104,7 +104,7 @@ def get_info(data: dict) -> Player:
     adjusted_wlr = wilson_ratio(games_won, games_lost)
     # Basically a modified wilson FKDR scaled by 10, with extra points for high numbers of finals/beds
     index = final_kills + 2.5*bed_breaks
-    skill_score = 5 * wilson_ratio(math.floor(index), final_deaths) + (index/80)**0.75 - 15
+    skill_score = 5 * wilson_ratio(math.floor(index), final_deaths) + (index/160)**0.65 - 5
 
     return Player(bedwars_level=bedwars_level, network_level=network_level, network_rank=network_rank,
                   final_kills=final_kills, final_deaths=final_deaths, bed_breaks=bed_breaks, bed_losses=bed_losses,
@@ -115,6 +115,7 @@ def get_info(data: dict) -> Player:
 def print_data(game_id: str, data: dict):
     print(CLEAR)
     print(f'Game {game_id}:\n')
+    spaces = len(longest_name(data))
 
     nicked_players = {}
     for player in list(data):
@@ -122,7 +123,6 @@ def print_data(game_id: str, data: dict):
             nicked_players[player] = data[player]
             data.pop(player)
 
-    spaces = len(longest_name(data))
     data = dict(sorted(data.items(), key=lambda item: item[1].skill_score, reverse=True))
     title = f'{"NAME":<{spaces}} |    LEVEL    | BW LEVEL | SKILL SCORE | FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |'
     print('=' * len(title))
