@@ -139,9 +139,10 @@ def print_data(game_id: str, player_data: dict):
     unnicked_player_data = dict(sorted(unnicked_player_data.items(), key=lambda item: item[1].skill_score, reverse=True))
     title = (f'{C.bcyan}{"NAME":<{spaces}} |  NETWORK LEVEL  | BW LEVEL |   SKILL SCORE   '
              + f'||| FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |{C.end}')
-    print('=' * len(title))
+    title_length = len(title) - len(C.bcyan) - len(C.end)
+    print('=' * title_length)
     print(title)
-    print('=' * len(title))
+    print('=' * title_length)
 
     for name in unnicked_player_data:
         player_spaces = spaces - len(constants.RAW_RANK[unnicked_player_data[name].network_rank])
@@ -161,7 +162,7 @@ def print_data(game_id: str, player_data: dict):
     for name in nicked_player_data:
         display_name = player_raw_display_name(name, unnicked_player_data, nicked=True)
         print(f'{C.black}{display_name:<{spaces}}{C.end} | {nicked_player_data[name]:^150} |')
-    print('=' * len(title))
+    print('=' * title_length)
 
 
 # Color
