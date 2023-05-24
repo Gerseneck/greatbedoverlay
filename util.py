@@ -114,7 +114,7 @@ def get_info(api_data: dict) -> Player:
     adjusted_wlr = wilson_ratio(games_won, games_lost)
     # Basically a modified wilson FKDR scaled by 10, with extra points for high numbers of finals/beds
     index = final_kills + 2.5*bed_breaks
-    skill_score = 5 * wilson_ratio(math.floor(index), final_deaths) + (index/160)**0.65 - 5
+    skill_score = 5 * wilson_ratio(math.floor(index), final_deaths) + (index/160)**0.7 - 5
 
     return Player(bedwars_level=bedwars_level, network_level=network_level, network_rank=network_rank,
                   final_kills=final_kills, final_deaths=final_deaths, bed_breaks=bed_breaks, bed_losses=bed_losses,
@@ -137,8 +137,8 @@ def print_data(game_id: str, player_data: dict):
     spaces = len(longest_name(unnicked_player_data, nicked_player_data))
 
     unnicked_player_data = dict(sorted(unnicked_player_data.items(), key=lambda item: item[1].skill_score, reverse=True))
-    title = (f'{"NAME":<{spaces}} |  NETWORK LEVEL  | BW LEVEL |   SKILL SCORE   '
-             + f'||| FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |')
+    title = (f'{C.bcyan}{"NAME":<{spaces}} |  NETWORK LEVEL  | BW LEVEL |   SKILL SCORE   '
+             + f'||| FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |{C.end}')
     print('=' * len(title))
     print(title)
     print('=' * len(title))
@@ -171,7 +171,7 @@ def format_skill(skill: float) -> str:
     raw_string = f'{skill:.1f}'
     if skill >= 100:
         # alternating color pattern
-        formatted = ''.join([(C.bred if i % 2 == 0 else C.bmagenta) + character for i, character in enumerate(raw_string)])
+        formatted = ''.join([(C.bmagenta if i % 2 == 0 else C.bred) + character for i, character in enumerate(raw_string)])
     elif skill >= 50:
         formatted = C.bblue + raw_string
     elif skill >= 15:
