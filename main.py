@@ -35,6 +35,7 @@ def main():
     print('\033[H\033[2J')
     print('GreatOverlay')
 
+    # TODO Setup config file for client, API key
     log = pl.Path('~/.lunarclient/offline/multiver/logs/latest.log').expanduser().open('r')
     key = input('Please enter an API key: ')
 

@@ -83,23 +83,8 @@ def player_raw_display_name(name: str, data: dict, nicked: bool) -> str:
     return f'{constants.RAW_RANK[data[name].network_rank]}{name}'
 
 
-def level_color(level: int) -> str:
-    if level >= 600:
-        return C.bdarkred  # NOTE: your terminal may require customization to bold the dark colors
-    elif level >= 500:
-        return C.bdarkcyan
-    elif level >= 400:
-        return C.bdarkgreen
-    elif level >= 300:
-        return C.bcyan
-    elif level >= 200:
-        return C.darkyellow
-    elif level >= 100:
-        return C.bwhite
-    else:
-        return C.black
-
-
+# TODO Evaluate whether a player is in a party
+# TODO Evaluate whether a player is an alt
 def get_info(data: dict) -> Player:
     network_level = get_network_level(data)
     network_rank = get_rank(data)
@@ -147,8 +132,8 @@ def print_data(game_id: str, data: dict):
     spaces = len(longest_name(data, nicked_players))
 
     data = dict(sorted(data.items(), key=lambda item: item[1].skill_score, reverse=True))
-    title = (f'{"NAME":<{spaces}} |  NETWORK LEVEL  | BW LEVEL | SKILL SCORE'
-             + f' ||| FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |')
+    title = (f'{"NAME":<{spaces}} |  NETWORK LEVEL  | BW LEVEL |   SKILL SCORE   '
+             + f'||| FINAL KILLS | RAW FKDR | ADJ FKDR | BEDS BROKEN |  WINS  | RAW WLR | ADJ WLR | WINSTREAK |')
     print('=' * len(title))
     print(title)
     print('=' * len(title))
@@ -158,12 +143,12 @@ def print_data(game_id: str, data: dict):
         print(f'{data[player_name].network_rank}{player_name:<{player_spaces}}{C.end}'
               f' | {data[player_name].network_level:^15}'
               f' | {level_color(data[player_name].bedwars_level)}{data[player_name].bedwars_level:^8}{C.end}'
-              f' | {C.bwhite}{data[player_name].skill_score:^11.1f}{C.end}'
-              f' ||| {data[player_name].final_kills:^11}'
+              f' |   {format_skill(data[player_name].skill_score)}   '
+              f' ||| {final_kill_color(data[player_name].final_kills)}{data[player_name].final_kills:^11}{C.end}'
               f' | {C.black}{data[player_name].raw_fkdr:^8.2f}{C.end}'
               f' | {data[player_name].adjusted_fkdr:^8.2f}'
-              f' | {data[player_name].bed_breaks:^11}'
-              f' | {data[player_name].games_won:^6}'
+              f' | {bed_break_color(data[player_name].bed_breaks)}{data[player_name].bed_breaks:^11}{C.end}'
+              f' | {win_color(data[player_name].games_won)}{data[player_name].games_won:^6}{C.end}'
               f' | {C.black}{data[player_name].raw_wlr:^7.2f}{C.end}'
               f' | {data[player_name].adjusted_wlr:^7.2f}'
               f' | {data[player_name].current_winstreak:^9}'
@@ -172,3 +157,59 @@ def print_data(game_id: str, data: dict):
         display_name = player_raw_display_name(player_name, data, nicked=True)
         print(f'{display_name:<{spaces}} | {nicked_players[player_name]:^135} |')
     print('=' * len(title))
+
+
+# Color
+
+
+def format_skill(skill: float) -> str:
+    raw_string = f'{skill:.1f}'
+    spaces = 11 - len(raw_string)
+    if skill >= 100:
+        # alternating color pattern
+        formatted = ''.join([(C.bred if i % 2 == 0 else C.bmagenta) + character for i, character in enumerate(raw_string)])
+    elif skill >= 50:
+        formatted = C.bblue + raw_string
+    elif skill >= 15:
+        formatted = C.green + raw_string
+    else:
+        formatted = C.darkgreen + raw_string
+    return formatted + ' '*spaces + C.end
+def level_color(level: int) -> str:
+    if level >= 600:
+        return C.bdarkred  # NOTE: your terminal may require customization to bold the dark colors
+    if level >= 500:
+        return C.bdarkcyan
+    if level >= 400:
+        return C.bdarkgreen
+    if level >= 300:
+        return C.bcyan
+    if level >= 200:
+        return C.darkyellow
+    if level >= 100:
+        return C.bwhite
+    return C.black
+def final_kill_color(finals: int) -> str:
+    if finals >= 10000:
+        return C.bred
+    if finals >= 5000:
+        return C.bdarkyellow
+    if finals >= 2500:
+        return C.yellow
+    return ''
+def bed_break_color(beds: int) -> str:
+    if beds >= 5000:
+        return C.bred
+    if beds >= 2500:
+        return C.bdarkyellow
+    if beds >= 1250:
+        return C.yellow
+    return ''
+def win_color(games_won: int) -> str:
+    if games_won >= 2500:
+        return C.bred
+    if games_won >= 1250:
+        return C.bdarkyellow
+    if games_won >= 500:
+        return C.yellow
+    return ''
