@@ -39,7 +39,7 @@ def get_network_level(api_data: dict):
 
 
 def get_rank(api_data: dict):
-    rank = 'NORMAL'
+    rank = 'NONE'
     if 'rank' in api_data['player']:
         rank = api_data['player']['rank']
     elif 'monthlyPackageRank' in api_data['player'] and api_data['player']['monthlyPackageRank'] != 'NONE':
