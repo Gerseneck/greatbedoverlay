@@ -64,6 +64,7 @@ RAW_RANK = {
 
 RANK = {
     'NONE': '',
+    'NORMAL': '',
     'VIP': f'{C.green}[VIP] ',
     'VIP_PLUS': f'{C.green}[VIP{C.yellow}+{C.green}] ',
     'MVP': f'{C.cyan}[MVP] ',
